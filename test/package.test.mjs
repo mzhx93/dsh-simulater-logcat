@@ -19,13 +19,17 @@ test('fork package identity is consistent with the DSH bundle and client', async
   assert.ok(!host.includes('add @windypro-rourou/dsh-logcat'));
 });
 
-test('fork documents upstream attribution and distinguishes unpublished registry commands', async () => {
-  for (const file of ['README.md', 'README.en.md']) {
-    const content = await read(file);
-    assert.ok(content.includes('https://github.com/WindyPro-rourou/dsh-logcat'));
-    assert.ok(content.includes(manifest.name));
-    assert.ok(content.includes('Apache-2.0'));
-  }
+test('Chinese-only README preserves upstream attribution and fork identity', async () => {
+  const content = await read('README.md');
+  assert.ok(content.includes('https://github.com/WindyPro-rourou/dsh-logcat'));
+  assert.ok(content.includes('原项目作者为 **WindyPro-rourou**'));
+  assert.ok(content.includes('上游基线版本为 **0.8.4**'));
+  assert.ok(content.includes(manifest.name));
+  assert.ok(content.includes('Apache-2.0'));
+  assert.ok(content.includes('[LICENSE](LICENSE)'));
+  assert.ok(!content.includes('README.en.md'));
+  assert.ok(!manifest.files.includes('README.en.md'));
+  await assert.rejects(read('README.en.md'), { code: 'ENOENT' });
 });
 
 test('release helper derives fork destination without renaming the package', async () => {

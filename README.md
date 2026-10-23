@@ -2,9 +2,13 @@
 
 DSH Web GUI 的安卓设备与模拟器日志工具（类似 Android Studio 的 Logcat 视图）。
 
-本项目是 [WindyPro-rourou/dsh-logcat](https://github.com/WindyPro-rourou/dsh-logcat) 的 fork，上游基线为 0.8.4，保留 Apache-2.0 许可证。本 fork 从 0.9.0 开始使用独立包名 `@mzhx93/dsh-simulater-logcat`，新增显式 MuMu ADB 连接恢复。包名改变不代表已发布到 npm。
+## 项目来源与许可
 
-[中文](README.md) | [English](README.en.md)
+本项目基于 **[WindyPro-rourou/dsh-logcat](https://github.com/WindyPro-rourou/dsh-logcat)** 分叉开发，原项目作者为 **WindyPro-rourou**，上游基线版本为 **0.8.4**。感谢原作者提供的安卓调试面板、日志采集与设备工具实现。
+
+本分支由 [mzhx93/dsh-simulater-logcat](https://github.com/mzhx93/dsh-simulater-logcat) 独立维护，自 **0.9.0** 起使用包名 `@mzhx93/dsh-simulater-logcat`，在上游基础上增加 MuMu 模拟器实例发现、显式 ADB 连接恢复及相关安全校验和测试。该分支并非上游官方发布，包名变更也不代表已发布到 npm。
+
+项目继续遵循 **Apache-2.0** 许可证，保留上游适用的版权与许可声明，详见 [LICENSE](LICENSE)。
 
 ## MuMu 显式连接
 

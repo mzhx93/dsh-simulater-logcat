@@ -37,8 +37,7 @@
   "files": [
     "lib/**/*.js",
     "cordis.patch.yml",
-    "README.md",
-    "README.en.md"
+    "README.md"
   ],
   "license": "Apache-2.0",
   "homepage": "https://github.com/mzhx93/dsh-simulater-logcat#readme",
