@@ -1,8 +1,16 @@
-# dsh-logcat
+# dsh-simulater-logcat
 
-DSH Web GUI 的安卓实机调试面板（类似 Android Studio 的 Logcat 视图）。
+DSH Web GUI 的安卓设备与模拟器日志工具（类似 Android Studio 的 Logcat 视图）。
+
+本项目是 [WindyPro-rourou/dsh-logcat](https://github.com/WindyPro-rourou/dsh-logcat) 的 fork，上游基线为 0.8.4，保留 Apache-2.0 许可证。本 fork 从 0.9.0 开始使用独立包名 `@mzhx93/dsh-simulater-logcat`，新增显式 MuMu ADB 连接恢复。包名改变不代表已发布到 npm。
 
 [中文](README.md) | [English](README.en.md)
+
+## MuMu 显式连接
+
+设备下拉框旁的“连接 MuMu”用于恢复“模拟器已经启动，但 `adb devices` 为空”的情况。点击后查询 MuMu 管理器的实际运行实例和 ADB 端口：单实例直接连接，多实例先选择后再次点击。服务端重新校验实例，再执行仅限本机 `127.0.0.1` 的 `adb connect` 并验证精确 serial 在线；不会猜测固定端口、扫描端口、重启 ADB 或断开其他设备。
+
+MuMu 12 的 `MuMuManager.exe` 需要可从实际 ADB 所在安装目录定位；找不到时显示诊断信息。**连接恢复本身不启动日志流，但本项目保留上游“设备上线后自动采集”的行为，连接成功后原有设备轮询会自动附加日志。** 新入口要求真实 DSH 会话鉴权；旧版缺少会话接口时拒绝操作。
 
 ## 功能
 
@@ -21,6 +29,7 @@ DSH Web GUI 的安卓实机调试面板（类似 Android Studio 的 Logcat 视�
   - **崩溃自动快照**：流中出现 FATAL EXCEPTION / ANR 时自动截图 + 上下文落盘 `~/.dsh/logcat/crashes`，
     面板弹提示条，可随时在「崩溃」弹窗里查看截图与日志
   - **events 事件视图**：一键开启 `logcat -b events` 实时流，看应用启动/崩溃/生命周期事件
+  - **MuMu 显式恢复连接**：发现 MuMu 12 实际运行实例及 ADB 端口，多实例时需选择；连接时重新校验实例与精确设备 serial，只连本机回环地址。连接后既有设备轮询会自动附加 logcat。
   - **WiFi 无线调试向导**：输入 IP/端口/配对码，自动 `adb pair` + `adb connect`，摆脱数据线（Android 11+）
   - **装APK 按钮**：本地文件选择器选 APK 直接安装到当前设备（流式上传，1GB 上限）
   - **设备快捷按键**：Home / 返回 / 最近任务 / 唤醒 / 电源 / 音量 ± 一键发送
@@ -81,17 +90,19 @@ DSH Web GUI 的安卓实机调试面板（类似 Android Studio 的 Logcat 视�
 
 ## 安装
 
+当前 fork 尚未发布到包源时，请先在本目录运行 `pnpm pack`，完全退出目标 DSH 桌面端后，使用其 CLI 的 `plugin --profile desktop add file:<生成的tgz绝对路径> --ignore-scripts` 安装，再重开。Web profile 可替换为 `web`。下面的 npm/GitHub Packages 命令仅在对应包已经由维护者发布后可用；本次开发不自动安装、推送或发布。不要与原版 logcat 插件同时启用，它们保留相同的路由、工具和插件 id。
+
 ```bash
 # 方式一（推荐，npm 安装）：
-dsh plugin --profile web add @windypro-rourou/dsh-logcat
+dsh plugin --profile web add @mzhx93/dsh-simulater-logcat
 
 # 更新到最新版（不会自动更新；装旧版时面板/agent 通告会提示有新版本）：
 dsh plugin --profile web update                # 升到当前 major 内最新
-# 或强制最新：dsh plugin --profile web add @windypro-rourou/dsh-logcat@latest
+# 或强制最新：dsh plugin --profile web add @mzhx93/dsh-simulater-logcat@latest
 # 更新后重启 GUI（dsh web）生效
 
 # 尝鲜 preview 版（日常迭代高频更新，可能不稳定）：
-dsh plugin --profile web add @windypro-rourou/dsh-logcat@preview
+dsh plugin --profile web add @mzhx93/dsh-simulater-logcat@preview
 ```
 
 ### 可选：GitHub Packages 通道（npm.pkg.github.com）
@@ -103,12 +114,12 @@ dsh plugin --profile web add @windypro-rourou/dsh-logcat@preview
 
 ```ini
 # ~/.npmrc
-@windypro-rourou:registry=https://npm.pkg.github.com
+@mzhx93:registry=https://npm.pkg.github.com
 //npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}
 ```
 
 ```bash
-dsh plugin --profile web add @windypro-rourou/dsh-logcat   # 走上面配置的源
+dsh plugin --profile web add @mzhx93/dsh-simulater-logcat   # 走上面配置的源
 ```
 
 维护者发布（两个脚本都会**自动读取**凭据：有环境变量就用，没有就 dot-source 便携版加载器
@@ -127,13 +138,13 @@ dsh plugin --profile web add @windypro-rourou/dsh-logcat   # 走上面配置的�
 - 版本自检会按安装通道提示（正式版用户只看 `latest`，preview 用户只看 `preview`，互不打扰）。
 
 ```bash
-# 方式二（源码本地链接，实时生效无需重启）：把插件链进 web profile，
+# 方式二（源码本地链接，修改后仍须重启实际宿主以验证）：把插件链进 web profile，
 # 并在 ~/.dsh/profiles/web/cordis.patch.yml 增加一行：
-pnpm --dir "%USERPROFILE%\.dsh\profiles\web" add link:F:\dsh-logcat
+pnpm --dir "%USERPROFILE%\.dsh\profiles\web" add link:<本目录绝对路径>
 #   然后在 profile 的 cordis.patch.yml 追加：
 #   - insert:
 #       - id: logcat
-#         name: '@windypro-rourou/dsh-logcat'
+#         name: '@mzhx93/dsh-simulater-logcat'
 # 该 patch 文件会被运行中的 GUI 热监听；若未生效，重启 GUI 即可。
 
 # 方式三（bundle 层，README 原始流程，适合全新 profile；与方式二互斥，勿混用）：

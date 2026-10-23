@@ -1,8 +1,16 @@
-# dsh-logcat
+# dsh-simulater-logcat
 
-An Android real-device debugging workbench for the DSH Web GUI (an Android Studio-style Logcat view).
+An Android device and emulator Logcat workbench for the DSH Web GUI.
+
+Forked from [WindyPro-rourou/dsh-logcat](https://github.com/WindyPro-rourou/dsh-logcat), based on upstream 0.8.4 and retaining the Apache-2.0 license. This fork starts at 0.9.0 under `@mzhx93/dsh-simulater-logcat`, adding explicit MuMu ADB recovery. The new package name does not imply that it has been published to npm.
 
 [中文](README.md) | **English**
+
+## Explicit MuMu recovery
+
+Use **连接 MuMu** beside the device selector when MuMu is running but `adb devices` is empty. It queries the real running instances and ADB ports; one instance connects directly, while multiple instances require a selection and a second click. The server revalidates the chosen instance, runs only `adb connect 127.0.0.1:<discovered-port>`, and verifies the exact serial is online. It does not guess ports, scan, restart the ADB server, or disconnect other devices.
+
+MuMu 12's `MuMuManager.exe` must be discoverable from the actual ADB installation. Missing or unsupported setups produce a diagnostic. **Recovery does not itself start a log stream, but the inherited automatic device polling attaches logcat after a successful connection.** The new routes require a real authenticated DSH session and fail closed on unsupported hosts.
 
 ## Features
 
@@ -19,6 +27,7 @@ An Android real-device debugging workbench for the DSH Web GUI (an Android Studi
   - **History button**: loads on-disk persisted logs (survives GUI restarts; merged with the live buffer and deduped by timestamp)
   - **Crash auto-snapshots**: on a FATAL EXCEPTION / ANR in the stream, a screenshot + log context are saved to `~/.dsh/logcat/crashes`; the panel shows a banner and you can inspect the screenshot/log in the "Crash" dialog
   - **Events view**: one-click live `logcat -b events` stream (app start/crash/lifecycle events)
+  - **Explicit MuMu recovery**: discover actual running MuMu 12 instances and their ADB ports; select when multiple. The connection helper is loopback-only and revalidates exact device identity. After reconnection, the existing automatic device poll attaches logcat.
   - **WiFi wireless debugging wizard**: IP/port/pairing-code in, `adb pair` + `adb connect` out — ditch the cable (Android 11+)
   - **Install APK button**: local file picker installs an APK to the current device (streamed upload, 1GB cap)
   - **Quick device keys**: Home / Back / Recents / Wake / Power / Volume ± with one click
@@ -44,17 +53,19 @@ An Android real-device debugging workbench for the DSH Web GUI (an Android Studi
 
 ## Installation
 
+Until this fork is published, run `pnpm pack`, fully exit the target DSH Desktop app, install the generated archive with its CLI (`plugin --profile desktop add file:<absolute-tgz-path> --ignore-scripts`), then reopen it. Use profile `web` for a web host. Registry commands below only apply after publication. Do not enable this fork alongside upstream: route, tool, and plugin IDs are intentionally retained.
+
 ```bash
 # Recommended (npm install):
-dsh plugin --profile web add @windypro-rourou/dsh-logcat
+dsh plugin --profile web add @mzhx93/dsh-simulater-logcat
 
 # Update to the latest (no auto-update; older installs show a version hint in the panel/agent prompt):
 dsh plugin --profile web update                # latest within the current major
-# or force: dsh plugin --profile web add @windypro-rourou/dsh-logcat@latest
+# or force: dsh plugin --profile web add @mzhx93/dsh-simulater-logcat@latest
 # restart the GUI (dsh web) afterwards
 
 # Optional preview channel (frequent small iterations, may be unstable):
-dsh plugin --profile web add @windypro-rourou/dsh-logcat@preview
+dsh plugin --profile web add @mzhx93/dsh-simulater-logcat@preview
 ```
 
 ### Optional: GitHub Packages registry (npm.pkg.github.com)
@@ -66,12 +77,12 @@ The same package is mirrored to GitHub Packages for environments that only want 
 
 ```ini
 # ~/.npmrc
-@windypro-rourou:registry=https://npm.pkg.github.com
+@mzhx93:registry=https://npm.pkg.github.com
 //npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}
 ```
 
 ```bash
-dsh plugin --profile web add @windypro-rourou/dsh-logcat   # resolves through the registry above
+dsh plugin --profile web add @mzhx93/dsh-simulater-logcat   # resolves through the registry above
 ```
 
 Maintainer publish (both scripts **auto-load credentials**: they use the environment when present,
@@ -96,7 +107,7 @@ pnpm --dir "%USERPROFILE%\.dsh\profiles\web" add link:<this-directory>
 # then add to ~/.dsh/profiles/web/cordis.patch.yml:
 #   - insert:
 #       - id: logcat
-#         name: '@windypro-rourou/dsh-logcat'
+#         name: '@mzhx93/dsh-simulater-logcat'
 # The patch file is hot-watched by a running GUI; restart it if it does not take effect.
 ```
 

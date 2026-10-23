@@ -1,7 +1,7 @@
 {
-  "name": "@windypro-rourou/dsh-logcat",
-  "description": "Android Logcat viewer for the dsh web GUI: auto-connects to any adb device in debug mode, live logcat stream with level/keyword filters, pause/clear/export, plus agent tools (logcat_recent). Hot-pluggable — mounted via ~/.dsh/cordis.patch.yml + a profile node_modules copy, no dsh source changes.",
-  "version": "0.8.4",
+  "name": "@mzhx93/dsh-simulater-logcat",
+  "description": "Android device and emulator Logcat workbench for DeepSeek Harness, with explicit MuMu ADB connection recovery, live logs, and agent tools.",
+  "version": "0.9.0",
   "type": "module",
   "packageManager": "pnpm@11.22.0",
   "engines": {
@@ -30,6 +30,7 @@
     "ws": "^8.18.0"
   },
   "peerDependencies": {
+    "@deepseek-ai/dsh-tools": "^0.2.1-rc.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
@@ -40,8 +41,20 @@
     "README.en.md"
   ],
   "license": "Apache-2.0",
+  "homepage": "https://github.com/mzhx93/dsh-simulater-logcat#readme",
+  "bugs": {
+    "url": "https://github.com/mzhx93/dsh-simulater-logcat/issues"
+  },
+  "keywords": ["dsh-plugin", "deepseek-harness", "android", "logcat", "adb", "mumu"],
+  "scripts": {
+    "check": "node --check lib/index.js && node --check lib/client.js",
+    "test": "node --test test/*.test.mjs"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "repository": {
     "type": "git",
-    "url": "https://github.com/WindyPro-rourou/dsh-logcat.git"
+    "url": "git+https://github.com/mzhx93/dsh-simulater-logcat.git"
   }
 }

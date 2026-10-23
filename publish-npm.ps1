@@ -1,6 +1,6 @@
 #requires -Version 7
 <#
-  Publish @windypro-rourou/dsh-logcat to the npmjs.org registry (the primary channel).
+  Publish @mzhx93/dsh-simulater-logcat to the npmjs.org registry (the primary channel).
 
   Usage:
     ./publish-npm.ps1

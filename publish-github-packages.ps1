@@ -1,6 +1,6 @@
 #requires -Version 7
 <#
-  Publish @windypro-rourou/dsh-logcat to the GitHub Packages npm registry
+  Publish @mzhx93/dsh-simulater-logcat to the GitHub Packages npm registry
   (https://npm.pkg.github.com), mirroring what is already on npmjs.org.
 
   Requires a GitHub token with: write:packages (plus read:packages and repo).
@@ -32,7 +32,7 @@ if (-not $env:GH_TOKEN) {
 if (-not $env:GH_TOKEN) { throw 'set GH_TOKEN to a PAT with write:packages before running this script' }
 
 $manifest = Get-Content (Join-Path $PSScriptRoot 'package.json') -Raw | ConvertFrom-Json
-$ownerScope = $manifest.name.Split('/')[0]            # e.g. @windypro-rourou
+$ownerScope = $manifest.name.Split('/')[0]            # e.g. @mzhx93
 $registry = 'https://npm.pkg.github.com'
 
 Write-Host "publishing $($manifest.name)@$($manifest.version) to $registry as $ownerScope" -ForegroundColor Cyan

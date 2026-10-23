@@ -5,7 +5,7 @@
 #        $env:GH_TOKEN   = "<GitHub Personal Access Token（repo + 建仓权限）>"
 #        $env:NPM_TOKEN  = "<npm automation token（可选，不设则跳过 npm 发布）>"
 #      powershell -ExecutionPolicy Bypass -File .\publish.ps1
-#   3) 脚本会：git init + 提交 + 推送 github.com/<user>/dsh-logcat + 打 topic + npm publish。
+#   3) 脚本会：git init + 提交 + 推送 package.json 中配置的 fork 仓库 + 打 topic + npm publish。
 # 也可以不跑脚本，按输出里的手动命令逐个执行。
 $ErrorActionPreference = 'Stop'
 chcp 65001 > $null
@@ -36,8 +36,13 @@ if (-not $user) {
 if (-not $user) { $user = Read-Host "GitHub 用户名" }
 Write-Host "GitHub 用户: $user"
 
-$repo = 'dsh-logcat'
-$remote = "https://github.com/$user/$repo.git"
+$manifest = Get-Content (Join-Path $PSScriptRoot 'package.json') -Raw | ConvertFrom-Json
+$repositoryUrl = $manifest.repository.url -replace '^git\+', ''
+if ($repositoryUrl -notmatch '^https://github[.]com/([^/]+)/([^/]+?)(?:[.]git)?$') { throw 'package.json repository.url must identify this GitHub fork' }
+$repositoryOwner = $Matches[1]
+$repo = $Matches[2]
+if ($user -ne $repositoryOwner) { throw "GitHub user $user does not match fork owner $repositoryOwner" }
+$remote = "https://github.com/$repositoryOwner/$repo.git"
 
 # 2) 建仓（未建则用 API 创建公开仓库）
 if ($env:GH_TOKEN) {
@@ -84,15 +89,13 @@ if ($env:GH_TOKEN) {
 # 5) npm 发布（可选）
 if ($env:NPM_TOKEN) {
   npm config set "//registry.npmjs.org/:_authToken=$env:NPM_TOKEN" | Out-Null
-  # 包 scope = GitHub 用户名（npm 用 GitHub 登录后，@scope 即用户名）。
-  # 把 package.json 的 name 改成 @<user>/dsh-logcat，否则发布到别的 scope 会因无权而失败。
+  # 发布清单中的 fork 包名；不要改写 package.json 或发布到上游 scope。
   $pkg = Get-Content package.json -Raw | ConvertFrom-Json
-  $pkg.name = "@$user/dsh-logcat"
-  $pkg | ConvertTo-Json -Depth 10 | Set-Content package.json -Encoding UTF8
+  if ($pkg.name -ne "@$repositoryOwner/$repo") { throw 'Package name must match the fork owner/repository before publication' }
   Write-Host "发布包名: $($pkg.name)" -ForegroundColor Cyan
   npm publish --access public
-  Write-Host "已发布到 npm: @$user/dsh-logcat" -ForegroundColor Green
-  Write-Host "用户安装: dsh plugin --profile web add @$user/dsh-logcat"
+  Write-Host "已发布到 npm: $($pkg.name)" -ForegroundColor Green
+  Write-Host "用户安装: dsh plugin --profile web add $($pkg.name)"
 } else {
   Write-Host "[跳过 npm] 未提供 NPM_TOKEN。登录后可手动：npm login; npm publish --access public"
 }
